@@ -6,7 +6,7 @@ import { setOnUnauthorized } from '../services/httpClient.js';
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   // true mientras se comprueba el token persistido — evita el "flash" a Login
   const [isLoading, setIsLoading] = useState(true);
 
