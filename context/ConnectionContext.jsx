@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useAuth } from './AuthContext.jsx';
-import { getStatus } from '../services/robotService.js';
+import { connect, getStatus } from '../services/robotService.js';
+import { DEBUG } from '../config/debug.js';
 
 const POLL_INTERVAL_MS = 30_000;
 
@@ -25,30 +26,30 @@ export function ConnectionProvider({ children }) {
     try {
       const data = await getStatus();
       setStatus(data);
-    } catch {
-      // Si falla (red caída, timeout) marcamos error sin borrar el tipo de robot
-      // previo, ya que puede ser un problema temporal de conectividad.
+    } catch (e) {
+      console.error('[ConnectionContext] fetchStatus failed:', e?.message ?? e);
       setStatus((prev) => ({ ...prev, connection_state: 'error' }));
     }
   }, []);
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      // Al cerrar sesión limpiamos el estado y detenemos el polling
+    if (!DEBUG.autoConnect) return;
+    connect({ robotType: DEBUG.robotType, networkInterface: DEBUG.networkInterface })
+      .catch(() => {})
+      .finally(() => fetchStatus());
+  }, [fetchStatus]);
+
+  useEffect(() => {
+    if (!DEBUG.autoConnect) {
       setStatus(DEFAULT_STATUS);
       clearInterval(intervalRef.current);
       return;
     }
 
-    // Consulta inmediata al autenticarse
     setIsLoading(true);
     fetchStatus().finally(() => setIsLoading(false));
-
-    // Polling cada POLL_INTERVAL_MS
     intervalRef.current = setInterval(fetchStatus, POLL_INTERVAL_MS);
 
-    // Cleanup: si isAuthenticated cambia o el componente se desmonta,
-    // cancelamos el intervalo para no generar memory leaks ni peticiones huérfanas
     return () => clearInterval(intervalRef.current);
   }, [isAuthenticated, fetchStatus]);
 
