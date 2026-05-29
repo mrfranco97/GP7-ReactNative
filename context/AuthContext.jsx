@@ -1,9 +1,10 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { getToken } from '../utils/tokenStorage.js';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { login as loginService, logout as logoutService } from '../services/authService.js';
 import { setOnUnauthorized } from '../services/httpClient.js';
+import { clearToken, getToken } from '../utils/tokenStorage.js';
+import { jwtDecode } from 'jwt-decode';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -13,9 +14,20 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const restoreSession = async () => {
-      const token = await SecureStore.getItemAsync('token');
-      if (token) setUser({ username: 'usuario' });
-      setIsLoading(false);
+      try {
+        const token = await getToken(); 
+        
+        if (token) {
+          const decoded = jwtDecode(token);
+          setUser({ username: decoded.sub }); 
+          setIsAuthenticated(true); 
+        }
+      } catch (error) {
+        console.log("Error restaurando sesión:", error);
+        await clearToken(); 
+      } finally {
+        setIsLoading(false);
+      }
     };
     restoreSession();
   }, []);
@@ -29,8 +41,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const login = useCallback(async (identifier, password) => {
-    await loginService({ identifier, password });
-    setIsAuthenticated(true);
+    const data = await loginService({ identifier, password });
+    if (data?.access_token) {
+      // guardamos username u otra data si queremos persistirla
+      setUser({ username: identifier });
+      setIsAuthenticated(true);
+    }
   }, []);
 
   const logout = useCallback(async () => {

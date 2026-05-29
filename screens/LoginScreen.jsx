@@ -1,66 +1,91 @@
-import { View, Text, StyleSheet, KeyboardAvoidingView, TouchableOpacity } from 'react-native';
-import { useContext, useState } from 'react';
+import React, { useContext, useState } from 'react';
+import { View, Text, StyleSheet, KeyboardAvoidingView, TouchableOpacity, TextInput, ActivityIndicator, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { AuthContext } from '../context/AuthContext';
-import * as SecureStore from 'expo-secure-store';
 
-export default function LoginScreen() {
+export default function LoginScreen({ navigation }) {
   const { login } = useContext(AuthContext);
-  const [username, setUsername] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (!identifier || !password) 
+      return alert('Por favor, completa todos los campos'); 
+    
     try {
-      await login(username, password);
+      setIsLoading(true);
+      await login(identifier, password);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
 
   return (
-    <View style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-      >
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'android' ? 24 : 0}
+    >
+      <View style={styles.keyboardView}>
         <View style={styles.logoContainer}>
-          <Text style={styles.logoText}>Inicia Sesión</Text>
+          <Text style={styles.logoTextTitle}>Bienvenido</Text>
+          <Text style={styles.logoText}>¡Inicia Sesión!</Text>
         </View>
 
         <TextInput
           style={styles.input}
-          placeholder="Usuario"
-          placeholderTextColor={colors.textSecondary}
-          value={username}
-          onChangeText={setUsername}
+          placeholder="Ingresa tu nombre de usuario o email"
+          placeholderTextColor="#9ca3af"
+          value={identifier}
+          onChangeText={setIdentifier}
           autoCapitalize="none"
           autoCorrect={false}
         />
 
-        <TextInput
-          style={styles.input}
-          placeholder="Contraseña"
-          placeholderTextColor={colors.textSecondary}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Ingresa tu contraseña"
+            placeholderTextColor="#9ca3af"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+          />
+          <TouchableOpacity 
+            style={styles.eyeIcon} 
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="#9ca3af" />
+          </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin} activeOpacity={0.8}>
-          <Text style={styles.buttonText}>Ingresar</Text>
+        <TouchableOpacity 
+          style={[styles.button, isLoading && styles.buttonDisabled]} 
+          onPress={handleLogin} 
+          activeOpacity={0.8}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={styles.buttonText}>Ingresar</Text>
+          )}
         </TouchableOpacity>
 
 
-        <TouchableOpacity onPress={() => navigation.navigate('ResetPassword')}>
-          <Text style={styles.forgotPassword}>¿Olvidaste tu contraseña?</Text>
-        </TouchableOpacity>
         <View style={styles.registerContainer}>
           <Text style={styles.registerText}>¿No tienes cuenta? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Register')}>
             <Text style={styles.registerLink}>Regístrate Aquí</Text>
           </TouchableOpacity>
         </View>
-      </KeyboardAvoidingView>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -80,15 +105,17 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logoText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    contextAlign: 'center',
+  },
+  logoTextTitle: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#ffffff',
-  },
-  forgotPassword: {
-    color: '#3b82f6',
-    marginTop: 15,
-    marginBottom: 10,
-    textAlign: 'center',
+    contextAlign: 'center',
+    bottom: 10,
   },
   registerContainer: {
     flexDirection: 'row',
@@ -105,17 +132,44 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 24,
   },
+  input: {
+    backgroundColor: '#1f2937',
+    color: '#ffffff',
+    width: '100%',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1f2937',
+    width: '100%',
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    color: '#ffffff',
+    padding: 15,
+  },
+  eyeIcon: {
+    paddingRight: 15,
+  },
   button: {
     width: '100%',
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
+    backgroundColor: '#22c55e',
+    paddingVertical: 15,
     borderRadius: 12,
     alignItems: 'center',
-    marginTop: spacing.sm,
+    marginTop: 10,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
   },
   buttonText: {
-    color: colors.white,
-    fontSize: fontSizes.md,
+    color: '#ffffff',
+    fontSize: 16,
     fontWeight: 'bold',
   },
 });
