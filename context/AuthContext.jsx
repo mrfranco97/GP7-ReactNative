@@ -9,22 +9,21 @@ export const AuthContext = createContext({});
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // true mientras se comprueba el token persistido — evita el "flash" a Login
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const token = await getToken(); 
-        
+        const token = await getToken();
+
         if (token) {
           const decoded = jwtDecode(token);
-          setUser({ username: decoded.sub }); 
-          setIsAuthenticated(true); 
+          setUser({ username: decoded.sub });
+          setIsAuthenticated(true);
         }
       } catch (error) {
         console.log("Error restaurando sesión:", error);
-        await clearToken(); 
+        await clearToken();
       } finally {
         setIsLoading(false);
       }
@@ -43,7 +42,6 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (identifier, password) => {
     const data = await loginService({ identifier, password });
     if (data?.access_token) {
-      // guardamos username u otra data si queremos persistirla
       setUser({ username: identifier });
       setIsAuthenticated(true);
     }

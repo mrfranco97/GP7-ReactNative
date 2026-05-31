@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useAuth } from './AuthContext.jsx';
-import { connect, getStatus } from '../services/robotService.js';
+import { connect, disconnect, getStatus } from '../services/robotService.js';
 import { DEBUG } from '../config/debug.js';
 
 const POLL_INTERVAL_MS = 30_000;
@@ -32,6 +32,7 @@ export function ConnectionProvider({ children }) {
     }
   }, []);
 
+  // Auto-conectar si está habilitado en debug
   useEffect(() => {
     if (!DEBUG.autoConnect) return;
     connect({ robotType: DEBUG.robotType, networkInterface: DEBUG.networkInterface })
@@ -39,10 +40,13 @@ export function ConnectionProvider({ children }) {
       .finally(() => fetchStatus());
   }, [fetchStatus]);
 
+  // Consultar y mantener actualizado el estado del robot si el usuario está autenticado
   useEffect(() => {
-    if (!DEBUG.autoConnect) {
+    if (!isAuthenticated) {
       setStatus(DEFAULT_STATUS);
-      clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
       return;
     }
 
@@ -50,11 +54,63 @@ export function ConnectionProvider({ children }) {
     fetchStatus().finally(() => setIsLoading(false));
     intervalRef.current = setInterval(fetchStatus, POLL_INTERVAL_MS);
 
-    return () => clearInterval(intervalRef.current);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
   }, [isAuthenticated, fetchStatus]);
 
+  const connectRobot = useCallback(async (robotType, networkInterface) => {
+    setIsLoading(true);
+    try {
+      const data = await connect({ robotType, networkInterface });
+      await fetchStatus();
+      return data;
+    } catch (e) {
+      console.error('[ConnectionContext] connectRobot failed:', e?.message ?? e);
+      const errMsg = e?.response?.data?.error ?? e?.message ?? 'Error de conexión';
+      setStatus((prev) => ({
+        ...prev,
+        connection_state: 'error',
+        last_error: errMsg,
+      }));
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchStatus]);
+
+  const disconnectRobot = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const data = await disconnect();
+      await fetchStatus();
+      return data;
+    } catch (e) {
+      console.error('[ConnectionContext] disconnectRobot failed:', e?.message ?? e);
+      const errMsg = e?.response?.data?.error ?? e?.message ?? 'Error al desconectar';
+      setStatus((prev) => ({
+        ...prev,
+        connection_state: 'error',
+        last_error: errMsg,
+      }));
+      throw e;
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchStatus]);
+
   return (
-    <ConnectionContext.Provider value={{ status, isLoading, refresh: fetchStatus }}>
+    <ConnectionContext.Provider
+      value={{
+        status,
+        isLoading,
+        refresh: fetchStatus,
+        connectRobot,
+        disconnectRobot,
+      }}
+    >
       {children}
     </ConnectionContext.Provider>
   );
