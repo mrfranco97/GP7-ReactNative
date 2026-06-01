@@ -11,14 +11,16 @@ export default function LoginScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!identifier || !password) 
-      return alert('Por favor, completa todos los campos'); 
-    
+    if (!identifier || !password)
+      return alert('Por favor, completa todos los campos');
+
     try {
       setIsLoading(true);
       await login(identifier, password);
     } catch (error) {
       console.log(error);
+      const errorMsg = error?.response?.data?.detail ?? error?.response?.data?.error ?? error?.message ?? 'Credenciales inválidas o error de conexión';
+      alert('Error al iniciar sesión: ' + errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -56,17 +58,17 @@ export default function LoginScreen({ navigation }) {
             onChangeText={setPassword}
             secureTextEntry={!showPassword}
           />
-          <TouchableOpacity 
-            style={styles.eyeIcon} 
+          <TouchableOpacity
+            style={styles.eyeIcon}
             onPress={() => setShowPassword(!showPassword)}
           >
             <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="#9ca3af" />
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
-          style={[styles.button, isLoading && styles.buttonDisabled]} 
-          onPress={handleLogin} 
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.buttonDisabled]}
+          onPress={handleLogin}
           activeOpacity={0.8}
           disabled={isLoading}
         >
@@ -108,13 +110,13 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#ffffff',
-    contextAlign: 'center',
+    textAlign: 'center',
   },
   logoTextTitle: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#ffffff',
-    contextAlign: 'center',
+    textAlign: 'center',
     bottom: 10,
   },
   registerContainer: {
@@ -128,9 +130,6 @@ const styles = StyleSheet.create({
   registerLink: {
     color: '#22c55e',
     fontWeight: 'bold',
-  },
-  text: {
-    fontSize: 24,
   },
   input: {
     backgroundColor: '#1f2937',

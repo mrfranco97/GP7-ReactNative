@@ -35,14 +35,19 @@ export function ConnectionProvider({ children }) {
   useEffect(() => {
     if (!DEBUG.autoConnect) return;
     connect({ robotType: DEBUG.robotType, networkInterface: DEBUG.networkInterface })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => fetchStatus());
   }, [fetchStatus]);
 
   useEffect(() => {
-    if (!DEBUG.autoConnect) {
-      setStatus(DEFAULT_STATUS);
-      clearInterval(intervalRef.current);
+    if (!isAuthenticated) {
+      if (!DEBUG.autoConnect) {
+        setStatus(DEFAULT_STATUS);
+        setIsLoading(false);
+      }
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
       return;
     }
 
