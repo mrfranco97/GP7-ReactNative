@@ -1,15 +1,4 @@
 {
-  "name": "gp7-reactnative",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
-    "web": "expo start --web",
-    "use:android": "node scripts/use-platform.js android",
-    "use:ios": "node scripts/use-platform.js ios"
-  },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^7.16.1",
     "@react-navigation/native": "^7.2.4",
@@ -22,6 +11,5 @@
     "react-native": "0.81.5",
     "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.16.0"
-  },
-  "private": true
+  }
 }
