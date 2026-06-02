@@ -1,32 +1,62 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { getToken } from '../utils/tokenStorage.js';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { login as loginService, logout as logoutService } from '../services/authService.js';
 import { setOnUnauthorized } from '../services/httpClient.js';
+import { clearToken, getToken } from '../utils/tokenStorage.js';
+import { jwtDecode } from 'jwt-decode';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   // true mientras se comprueba el token persistido — evita el "flash" a Login
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    getToken().then((token) => {
-      setIsAuthenticated(!!token);
-      setIsLoading(false);
-    });
+    const restoreSession = async () => {
+      try {
+        const token = await getToken();
+
+        if (token) {
+          const decoded = jwtDecode(token);
+          setUser({ username: decoded.sub });
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.log("Error restaurando sesión:", error);
+        await clearToken();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    restoreSession();
   }, []);
+
 
   // Cuando el httpClient recibe un 401, el token expiró o es inválido.
   // Delegamos la reacción aquí: limpiar el estado sin que ninguna pantalla
   // tenga que ocuparse de ello.
   useEffect(() => {
-    setOnUnauthorized(() => setIsAuthenticated(false));
+    setOnUnauthorized(() => {
+      setIsAuthenticated(false);
+      setUser(null);
+    });
   }, []);
 
   const login = useCallback(async (identifier, password) => {
-    await loginService({ identifier, password });
-    setIsAuthenticated(true);
+    try {
+      const data = await loginService({ identifier, password });
+      if (data?.access_token) {
+        // guardamos username u otra data si queremos persistirla
+        setUser({ username: identifier });
+        setIsAuthenticated(true);
+      } else {
+        throw new Error('Ocurrio un error inesperado. Por favor, intente mas tarde.');
+      }
+    } catch (error) {
+      console.error('[AuthContext] Error durante login:', error);
+      throw error;
+    }
   }, []);
 
   const logout = useCallback(async () => {

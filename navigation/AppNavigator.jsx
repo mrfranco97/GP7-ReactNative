@@ -20,11 +20,19 @@ export default function AppNavigator() {
 
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Home"
-        component={MainTabs}
-        options={{ headerRight: () => <ConnectionBadge /> }}
-      />
+      {isAuthenticated ? (
+        <Stack.Screen
+          name="Home"
+          component={MainTabs}
+          options={{ headerRight: () => <ConnectionBadge /> }}
+        />
+      ) : (
+        <Stack.Screen
+          name="Login"
+          component={LoginScreen}
+          options={{ headerShown: false }}
+        />
+      )}
     </Stack.Navigator>
   );
 }

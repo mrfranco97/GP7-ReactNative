@@ -1,9 +1,16 @@
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Button } from 'react-native';
+import { useAuth } from '../context/AuthContext';
 
 export default function PlaceholderScreen({ route }) {
+  const { logout } = useAuth();
+
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Pantalla de {route.name} — próximamente</Text>
+      
+      <View style={{ marginTop: 30 }}>
+        <Button title="Cerrar Sesión" onPress={logout} color="#ef4444" />
+      </View>
     </View>
   );
 }
