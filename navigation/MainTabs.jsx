@@ -2,6 +2,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import PlaceholderScreen from '../screens/PlaceholderScreen.jsx';
 import MotionControlScreen from '../screens/MotionControlScreen.jsx';
+import HomeScreen from '../screens/HomeScreen.jsx';
 
 const Tab = createBottomTabNavigator();
 
@@ -26,7 +27,7 @@ export default function MainTabs() {
         },
       })}
     >
-      <Tab.Screen name="Conexión" component={PlaceholderScreen} />
+      <Tab.Screen name="Conexión" component={HomeScreen} />
       <Tab.Screen name="Control" component={MotionControlScreen} />
       <Tab.Screen name="Acciones" component={PlaceholderScreen} />
       <Tab.Screen name="Historial" component={PlaceholderScreen} />

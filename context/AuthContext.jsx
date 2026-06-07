@@ -9,7 +9,6 @@ export const AuthContext = createContext({});
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  // true mientras se comprueba el token persistido — evita el "flash" a Login
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
