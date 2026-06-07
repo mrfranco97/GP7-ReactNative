@@ -6,7 +6,9 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "use:android": "node scripts/use-platform.js android",
+    "use:ios": "node scripts/use-platform.js ios"
   },
   "dependencies": {
     "@react-navigation/bottom-tabs": "^7.16.1",

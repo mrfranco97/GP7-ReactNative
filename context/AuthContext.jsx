@@ -36,14 +36,25 @@ export function AuthProvider({ children }) {
   // Delegamos la reacción aquí: limpiar el estado sin que ninguna pantalla
   // tenga que ocuparse de ello.
   useEffect(() => {
-    setOnUnauthorized(() => setIsAuthenticated(false));
+    setOnUnauthorized(() => {
+      setIsAuthenticated(false);
+      setUser(null);
+    });
   }, []);
 
   const login = useCallback(async (identifier, password) => {
-    const data = await loginService({ identifier, password });
-    if (data?.access_token) {
-      setUser({ username: identifier });
-      setIsAuthenticated(true);
+    try {
+      const data = await loginService({ identifier, password });
+      if (data?.access_token) {
+        // guardamos username u otra data si queremos persistirla
+        setUser({ username: identifier });
+        setIsAuthenticated(true);
+      } else {
+        throw new Error('Ocurrio un error inesperado. Por favor, intente mas tarde.');
+      }
+    } catch (error) {
+      console.error('[AuthContext] Error durante login:', error);
+      throw error;
     }
   }, []);
 

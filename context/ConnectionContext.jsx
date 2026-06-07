@@ -36,14 +36,17 @@ export function ConnectionProvider({ children }) {
   useEffect(() => {
     if (!DEBUG.autoConnect) return;
     connect({ robotType: DEBUG.robotType, networkInterface: DEBUG.networkInterface })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => fetchStatus());
   }, [fetchStatus]);
 
   // Consultar y mantener actualizado el estado del robot si el usuario está autenticado
   useEffect(() => {
     if (!isAuthenticated) {
-      setStatus(DEFAULT_STATUS);
+      if (!DEBUG.autoConnect) {
+        setStatus(DEFAULT_STATUS);
+        setIsLoading(false);
+      }
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
