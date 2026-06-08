@@ -18,8 +18,12 @@ export function AuthProvider({ children }) {
 
         if (token) {
           const decoded = jwtDecode(token);
-          setUser({ username: decoded.sub });
-          setIsAuthenticated(true);
+          if (decoded.exp && decoded.exp < Date.now() / 1000) {
+            await clearToken();
+          } else {
+            setUser({ username: decoded.sub });
+            setIsAuthenticated(true);
+          }
         }
       } catch (error) {
         console.log("Error restaurando sesión:", error);
@@ -45,13 +49,9 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (identifier, password) => {
     try {
       const data = await loginService({ identifier, password });
-      if (data?.access_token) {
-        // guardamos username u otra data si queremos persistirla
-        setUser({ username: identifier });
-        setIsAuthenticated(true);
-      } else {
-        throw new Error('Ocurrio un error inesperado. Por favor, intente mas tarde.');
-      }
+      const decoded = jwtDecode(data.access_token);
+      setUser({ username: decoded.sub ?? identifier });
+      setIsAuthenticated(true);
     } catch (error) {
       console.error('[AuthContext] Error durante login:', error);
       throw error;
@@ -61,10 +61,11 @@ export function AuthProvider({ children }) {
   const logout = useCallback(async () => {
     await logoutService();
     setIsAuthenticated(false);
+    setUser(null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, isLoading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

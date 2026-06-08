@@ -14,7 +14,6 @@ const ROBOT_CONFIG = {
     name: 'Unitree G1',
     type: 'Humanoide / G1',
     image: require('../public/Robot_Go1.jpg'),
-
   },
 };
 
@@ -31,10 +30,6 @@ export default function RobotSelector({ selectedRobot, onSelect }) {
           <Text style={styles.imageSubtitle}>{currentRobot.type}</Text>
         </View>
       </View>
-
-
-      <View style={styles.descText}></View>
-
 
       {/* Selector de Botones / Tarjetas */}
       <View style={styles.cardsContainer}>

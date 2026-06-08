@@ -27,6 +27,15 @@ export default function MotionControlScreen() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!isConnected && intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+      velocityRef.current = { vx: 0, vy: 0, vyaw: 0 };
+      joystickActiveRef.current = { left: false, right: false };
+    }
+  }, [isConnected]);
+
   function showFeedback(message, isError) {
     clearTimeout(feedbackTimerRef.current);
     setFeedback({ message, isError });
