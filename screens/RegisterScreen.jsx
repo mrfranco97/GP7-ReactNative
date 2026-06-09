@@ -1,13 +1,149 @@
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { register } from '../services/authService.js';
+import { getErrorMessage } from '../utils/apiErrors';
+
+const EMAIL_REGEX = /\S+@\S+\.\S+/;
 
 export default function RegisterScreen({ navigation }) {
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  const handleRegister = async () => {
+    setError('');
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
+
+    if (!trimmedUsername || !trimmedEmail || !password || !confirmPassword) {
+      setError('Por favor, completa todos los campos');
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setError('Ingresa un email válido');
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError('Las contraseñas no coinciden');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      await register({
+        username: trimmedUsername,
+        email: trimmedEmail,
+        password,
+      });
+      navigation.goBack();
+    } catch (error) {
+      console.error('[RegisterScreen]', error);
+      if (error?.status === 409) {
+        setError('El usuario o email ya está registrado.');
+      } else {
+        setError(getErrorMessage(error));
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Registro — próximamente</Text>
-      <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.link}>Volver al inicio de sesión</Text>
-      </TouchableOpacity>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'android' ? 24 : 0}
+    >
+      <View style={styles.keyboardView}>
+        <View style={styles.logoContainer}>
+          <Text style={styles.logoTextTitle}>Crear cuenta</Text>
+          <Text style={styles.logoText}>Regístrate para continuar</Text>
+        </View>
+
+        <TextInput
+          style={styles.input}
+          placeholder="Ingresa tu nombre de usuario"
+          placeholderTextColor="#9ca3af"
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Ingresa tu email"
+          placeholderTextColor="#9ca3af"
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          autoCorrect={false}
+          keyboardType="email-address"
+        />
+
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Ingresa tu contraseña"
+            placeholderTextColor="#9ca3af"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#9ca3af" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.passwordContainer}>
+          <TextInput
+            style={styles.passwordInput}
+            placeholder="Confirmar contraseña"
+            placeholderTextColor="#9ca3af"
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            secureTextEntry={!showConfirmPassword}
+          />
+          <TouchableOpacity
+            style={styles.eyeIcon}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          >
+            <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="#9ca3af" />
+          </TouchableOpacity>
+        </View>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+        <TouchableOpacity
+          style={[styles.button, isLoading && styles.buttonDisabled]}
+          onPress={handleRegister}
+          activeOpacity={0.8}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="#ffffff" />
+          ) : (
+            <Text style={styles.buttonText}>Registrarse</Text>
+          )}
+        </TouchableOpacity>
+
+        <View style={styles.loginContainer}>
+          <Text style={styles.loginText}>¿Ya tienes cuenta? </Text>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Text style={styles.loginLink}>Inicia sesión</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -17,14 +153,84 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#111827',
-    gap: 16,
   },
-  text: {
-    fontSize: 18,
-    color: '#6b7280',
+  keyboardView: {
+    width: '100%',
+    paddingHorizontal: 20,
+    alignItems: 'center',
   },
-  link: {
+  logoContainer: {
+    marginBottom: 40,
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    textAlign: 'center',
+  },
+  logoTextTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    textAlign: 'center',
+    bottom: 10,
+  },
+  loginContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  loginText: {
+    color: '#9ca3af',
+  },
+  loginLink: {
     color: '#22c55e',
-    fontWeight: '600',
+    fontWeight: 'bold',
+  },
+  input: {
+    backgroundColor: '#1f2937',
+    color: '#ffffff',
+    width: '100%',
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1f2937',
+    width: '100%',
+    borderRadius: 10,
+    marginBottom: 15,
+  },
+  passwordInput: {
+    flex: 1,
+    color: '#ffffff',
+    padding: 15,
+  },
+  eyeIcon: {
+    paddingRight: 15,
+  },
+  button: {
+    width: '100%',
+    backgroundColor: '#22c55e',
+    paddingVertical: 15,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
   },
 });
