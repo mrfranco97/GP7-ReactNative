@@ -7,13 +7,13 @@ const ROBOT_CONFIG = {
     name: 'Unitree Go2',
     type: 'Cuadrúpedo',
     image: require('../public/Robot_Go2.jpg'),
-
-
+    resizeMode: 'cover',
   },
   g1: {
     name: 'Unitree G1',
     type: 'Humanoide / G1',
     image: require('../public/Robot_G1.jpg'),
+    resizeMode: 'contain',
   },
 };
 
@@ -27,7 +27,13 @@ export default function RobotSelector({ selectedRobot, onSelect, isLocked = fals
         styles.imageWrapper,
         isLocked && styles.imageWrapperLocked,
       ]}>
-        <Image source={currentRobot.image} style={styles.image} />
+        {Object.entries(ROBOT_CONFIG).map(([key, config]) => (
+          <Image
+            key={key}
+            source={config.image}
+            style={[styles.image, { resizeMode: config.resizeMode, opacity: selectedRobot === key ? 1 : 0 }]}
+          />
+        ))}
         <View style={styles.imageOverlay}>
           <Text style={styles.imageTitle}>{currentRobot.name}</Text>
           <Text style={styles.imageSubtitle}>{currentRobot.type}</Text>
@@ -62,7 +68,7 @@ export default function RobotSelector({ selectedRobot, onSelect, isLocked = fals
               ]}
               onPress={() => onSelect(key)}
               activeOpacity={isDisabledCard ? 1 : 0.7}
-              disabled={isLocked}
+              disabled={isDisabledCard}
             >
               <Text style={[
                 styles.cardTitle,
@@ -113,7 +119,7 @@ const styles = StyleSheet.create({
     height: 180,
     borderRadius: 16,
     overflow: 'hidden',
-    backgroundColor: '#1f2937',
+    backgroundColor: '#ffffff',
     borderWidth: 1,
     borderColor: '#374151',
     position: 'relative',
@@ -128,9 +134,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   image: {
+    position: 'absolute',
     width: '100%',
     height: '100%',
-    resizeMode: 'cover',
   },
   imageOverlay: {
     position: 'absolute',

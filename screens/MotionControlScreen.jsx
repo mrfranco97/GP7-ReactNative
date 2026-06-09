@@ -4,6 +4,7 @@ import { useConnection } from '../context/ConnectionContext.jsx';
 import { move, stop, standup, sitdown } from '../services/motionService.js';
 import { getErrorMessage } from '../utils/apiErrors.js';
 import VirtualJoystick from '../components/VirtualJoystick.jsx';
+import { useHistory } from '../context/HistoryContext.jsx';
 
 const MAX_VX = 0.5;
 const MAX_VY = 0.3;
@@ -11,6 +12,7 @@ const MAX_VYAW = 0.8;
 
 export default function MotionControlScreen() {
   const { status } = useConnection();
+  const { logCommand } = useHistory();
   const isConnected = status?.connection_state === 'connected';
 
   const velocityRef = useRef({ vx: 0, vy: 0, vyaw: 0 });
@@ -63,7 +65,9 @@ export default function MotionControlScreen() {
   const onLeftStart = useCallback(() => {
     joystickActiveRef.current.left = true;
     startLoopIfNeeded();
-  }, []);
+    // Una fila por gesto: success optimista (los errores del loop continuo se ignoran por diseño).
+    logCommand({ type: 'move', label: 'Movimiento giro', success: true });
+  }, [logCommand]);
 
   const onLeftMove = useCallback(({ x }) => {
     velocityRef.current.vyaw = x * MAX_VYAW;
@@ -78,7 +82,9 @@ export default function MotionControlScreen() {
   const onRightStart = useCallback(() => {
     joystickActiveRef.current.right = true;
     startLoopIfNeeded();
-  }, []);
+    // Una fila por gesto: success optimista (los errores del loop continuo se ignoran por diseño).
+    logCommand({ type: 'move', label: 'Movimiento', success: true });
+  }, [logCommand]);
 
   const onRightMove = useCallback(({ x, y }) => {
     velocityRef.current.vx = -y * MAX_VX;
@@ -92,20 +98,28 @@ export default function MotionControlScreen() {
     stopLoopIfBothReleased();
   }, []);
 
-  function dpadPress(vx, vy, vyaw) {
-    move({ vx, vy, vyaw }).catch(() => {});
+  async function dpadPress(vx, vy, vyaw, label) {
+    try {
+      await move({ vx, vy, vyaw });
+      logCommand({ type: 'move', label, success: true });
+    } catch (e) {
+      logCommand({ type: 'move', label, success: false, detail: getErrorMessage(e) });
+    }
   }
 
   function dpadRelease() {
     stop().catch(() => {});
   }
 
-  async function handleAction(fn, label) {
+  async function handleAction(fn, label, type) {
     try {
       await fn();
       showFeedback(`${label}: OK`, false);
+      logCommand({ type, label, success: true });
     } catch (e) {
-      showFeedback(getErrorMessage(e), true);
+      const msg = getErrorMessage(e);
+      showFeedback(msg, true);
+      logCommand({ type, label, success: false, detail: msg });
     }
   }
 
@@ -116,7 +130,7 @@ export default function MotionControlScreen() {
         <View style={styles.dpadColumn}>
           <TouchableOpacity
             style={styles.dpadBtn}
-            onPressIn={() => dpadPress(0.5, 0, 0)}
+            onPressIn={() => dpadPress(0.5, 0, 0, 'Movimiento adelante')}
             onPressOut={dpadRelease}
           >
             <Text style={styles.dpadText}>▲</Text>
@@ -125,7 +139,7 @@ export default function MotionControlScreen() {
           <View style={styles.dpadRow}>
             <TouchableOpacity
               style={styles.dpadBtn}
-              onPressIn={() => dpadPress(0, -0.3, 0)}
+              onPressIn={() => dpadPress(0, -0.3, 0, 'Movimiento izquierda')}
               onPressOut={dpadRelease}
             >
               <Text style={styles.dpadText}>◄</Text>
@@ -133,7 +147,7 @@ export default function MotionControlScreen() {
             <View style={styles.dpadCenter} />
             <TouchableOpacity
               style={styles.dpadBtn}
-              onPressIn={() => dpadPress(0, 0.3, 0)}
+              onPressIn={() => dpadPress(0, 0.3, 0, 'Movimiento derecha')}
               onPressOut={dpadRelease}
             >
               <Text style={styles.dpadText}>►</Text>
@@ -142,7 +156,7 @@ export default function MotionControlScreen() {
 
           <TouchableOpacity
             style={styles.dpadBtn}
-            onPressIn={() => dpadPress(-0.5, 0, 0)}
+            onPressIn={() => dpadPress(-0.5, 0, 0, 'Movimiento atrás')}
             onPressOut={dpadRelease}
           >
             <Text style={styles.dpadText}>▼</Text>
@@ -154,19 +168,19 @@ export default function MotionControlScreen() {
       <View style={styles.actionRow}>
         <TouchableOpacity
           style={[styles.actionBtn, styles.stopBtn]}
-          onPress={() => handleAction(stop, 'Detener')}
+          onPress={() => handleAction(stop, 'Detener', 'stop')}
         >
           <Text style={styles.actionText}>Detener</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionBtn, styles.standBtn]}
-          onPress={() => handleAction(standup, 'Pararse')}
+          onPress={() => handleAction(standup, 'Pararse', 'standup')}
         >
           <Text style={styles.actionText}>Pararse</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionBtn, styles.sitBtn]}
-          onPress={() => handleAction(sitdown, 'Sentarse')}
+          onPress={() => handleAction(sitdown, 'Sentarse', 'sitdown')}
         >
           <Text style={styles.actionText}>Sentarse</Text>
         </TouchableOpacity>
