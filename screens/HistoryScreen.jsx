@@ -68,7 +68,6 @@ export default function HistoryScreen() {
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <Text style={styles.title}>Historial de Comandos</Text>
         {history.length > 0 && (
           <TouchableOpacity onPress={confirmClear} style={styles.clearButton}>
             <Ionicons name="trash-outline" size={18} color="#ef4444" />

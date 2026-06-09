@@ -1,5 +1,6 @@
 import { ActivityIndicator, View } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import { useAuth } from '../context/AuthContext.jsx';
 import ConnectionBadge from '../components/ConnectionBadge.jsx';
 import LoginScreen from '../screens/LoginScreen.jsx';
@@ -25,7 +26,10 @@ export default function AppNavigator() {
         <Stack.Screen
           name="Home"
           component={MainTabs}
-          options={{ headerRight: () => <ConnectionBadge /> }}
+          options={({ route }) => ({
+            title: getFocusedRouteNameFromRoute(route) ?? 'Conexión',
+            headerRight: () => <ConnectionBadge />,
+          })}
         />
       ) : (
         <>

@@ -96,10 +96,6 @@ export default function HomeScreen() {
       style={styles.keyboardContainer}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer} style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Panel de Conexión</Text>
-          <Text style={styles.subtitle}>Configura y enlaza el robot Unitree en la red</Text>
-        </View>
 
         {/* Tarjeta de Estado de Conexión Global */}
         <View style={[styles.statusCard, { backgroundColor: currentTheme.bgColor, borderColor: currentTheme.borderColor }]}>
