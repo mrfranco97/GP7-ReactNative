@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
     try {
       const data = await loginService({ identifier, password });
       const decoded = jwtDecode(data.access_token);
-      setUser({ username: decoded.sub ?? identifier });
+      setUser({ username: decoded.sub });
       setIsAuthenticated(true);
     } catch (error) {
       console.error('[AuthContext] Error durante login:', error);
