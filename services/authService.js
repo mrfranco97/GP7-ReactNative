@@ -16,10 +16,10 @@ export async function login({ identifier, password }) {
     password,
   });
 
-  if (data?.access_token) {
-    await saveToken(data.access_token);
+  if (!data?.access_token) {
+    throw new Error('La respuesta del servidor no contiene un token de acceso.');
   }
-
+  await saveToken(data.access_token);
   return data;
 }
 

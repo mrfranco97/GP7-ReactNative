@@ -1,6 +1,6 @@
 const DEFAULT_MESSAGES = {
   400: 'Solicitud inválida.',
-  401: 'Sesión inválida o expirada. Volvé a iniciar sesión.',
+  401: 'Sesión inválida o expirada. Vuelve a iniciar sesión.',
   404: 'Recurso no encontrado.',
   409: 'Conflicto con el estado actual.',
   503: 'El robot o el SDK no están disponibles.',
