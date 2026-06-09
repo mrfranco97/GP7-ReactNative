@@ -35,7 +35,7 @@ export default function ActionsScreen() {
     }
     setLoadingAcciones(true);
     getActions()
-      .then(setAcciones)
+      .then((data) => setAcciones(data.actions ?? []))
       .catch(() => setAcciones([]))
       .finally(() => setLoadingAcciones(false));
   }, [isConnected]);
