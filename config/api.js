@@ -6,7 +6,7 @@ const DEV_HOST = Platform.select({
   default: 'localhost',
 });
 
-export const API_HOST_OVERRIDE = '192.168.100.238';
+export const API_HOST_OVERRIDE = null;
 
 export const API_PORT = 8000;
 

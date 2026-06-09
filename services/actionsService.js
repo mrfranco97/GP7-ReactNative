@@ -2,7 +2,7 @@ import httpClient from './httpClient.js';
 
 export async function getActions() {
   const { data } = await httpClient.get('/actions');
-  return data;
+  return data.actions ?? [];
 }
 
 export async function runAction(actionName) {

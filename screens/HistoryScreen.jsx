@@ -10,6 +10,7 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useHistory } from '../context/HistoryContext.jsx';
+import { getActionIconByLabel } from '../config/actions.js';
 
 const TYPE_ICONS = {
   move: 'navigate',
@@ -20,7 +21,10 @@ const TYPE_ICONS = {
 };
 
 function HistoryRow({ item }) {
-  const icon = TYPE_ICONS[item.type] ?? 'ellipse';
+  const icon =
+    item.type === 'action'
+      ? getActionIconByLabel(item.label)
+      : (TYPE_ICONS[item.type] ?? 'ellipse');
   const when = new Date(item.created_at).toLocaleString();
   return (
     <View style={styles.row}>
@@ -46,7 +50,6 @@ function HistoryRow({ item }) {
 export default function HistoryScreen() {
   const { history, refresh, clear, error } = useHistory();
 
-  // Recargar desde la DB cada vez que la pantalla recibe foco.
   useFocusEffect(
     useCallback(() => {
       refresh();
