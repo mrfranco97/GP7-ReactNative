@@ -68,7 +68,7 @@ export default function RobotSelector({ selectedRobot, onSelect, isLocked = fals
               ]}
               onPress={() => onSelect(key)}
               activeOpacity={isDisabledCard ? 1 : 0.7}
-              disabled={isLocked}
+              disabled={isDisabledCard}
             >
               <Text style={[
                 styles.cardTitle,
