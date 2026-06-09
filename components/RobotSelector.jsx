@@ -13,7 +13,7 @@ const ROBOT_CONFIG = {
   g1: {
     name: 'Unitree G1',
     type: 'Humanoide / G1',
-    image: require('../public/Robot_Go1.jpg'),
+    image: require('../public/Robot_G1.jpg'),
   },
 };
 
