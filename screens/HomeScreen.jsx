@@ -14,6 +14,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useConnection } from '../context/ConnectionContext.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
 import RobotSelector from '../components/RobotSelector.jsx';
+import { getErrorMessage } from '../utils/apiErrors.js';
 
 export default function HomeScreen() {
   const { logout } = useAuth();
@@ -41,8 +42,7 @@ export default function HomeScreen() {
     try {
       await connectRobot(robotType, networkInterface);
     } catch (e) {
-      const msg = e?.response?.data?.error ?? e?.message ?? 'No se pudo conectar con el robot';
-      setActionError(msg);
+      setActionError(getErrorMessage(e));
     } finally {
       setLocalLoading(false);
     }
@@ -54,8 +54,7 @@ export default function HomeScreen() {
     try {
       await disconnectRobot();
     } catch (e) {
-      const msg = e?.response?.data?.error ?? e?.message ?? 'Error al intentar desconectar';
-      setActionError(msg);
+      setActionError(getErrorMessage(e));
     } finally {
       setLocalLoading(false);
     }

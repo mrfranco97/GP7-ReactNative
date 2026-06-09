@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, TouchableOpacity, TextInput, ActivityIndicator, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../utils/apiErrors';
 
 export default function LoginScreen({ navigation }) {
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,9 +19,8 @@ export default function LoginScreen({ navigation }) {
       setIsLoading(true);
       await login(identifier, password);
     } catch (error) {
-      console.log(error);
-      const errorMsg = error?.response?.data?.detail ?? error?.response?.data?.error ?? error?.message ?? 'Credenciales inválidas o error de conexión';
-      alert('Error al iniciar sesión: ' + errorMsg);
+      console.error('[LoginScreen]', error);
+      alert('Error al iniciar sesión: ' + getErrorMessage(error));
     } finally {
       setIsLoading(false);
     }
