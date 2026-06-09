@@ -22,5 +22,5 @@ export default function ConnectionBadge() {
 const styles = StyleSheet.create({
   container: { flexDirection: 'row', alignItems: 'center', marginRight: 12 },
   dot:       { width: 8, height: 8, borderRadius: 4, marginRight: 6 },
-  label:     { fontSize: 12, color: '#374151' },
+  label:     { fontSize: 12, color: '#e5e7eb' },
 });

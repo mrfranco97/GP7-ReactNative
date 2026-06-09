@@ -28,6 +28,10 @@ export default function AppNavigator() {
           component={MainTabs}
           options={({ route }) => ({
             title: getFocusedRouteNameFromRoute(route) ?? 'Conexión',
+            headerStyle: { backgroundColor: '#111827' },
+            headerTintColor: '#ffffff',
+            headerTitleStyle: { fontWeight: 'bold' },
+            headerShadowVisible: false,
             headerRight: () => <ConnectionBadge />,
           })}
         />

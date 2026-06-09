@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { register } from '../services/authService.js';
+import { getErrorMessage } from '../utils/apiErrors';
+
+const EMAIL_REGEX = /\S+@\S+\.\S+/;
 
 export default function RegisterScreen({ navigation }) {
   const [username, setUsername] = useState('');
@@ -9,30 +12,43 @@ export default function RegisterScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleRegister = async () => {
-    if (!username || !email || !password || !confirmPassword) {
-      return alert('Por favor, completa todos los campos');
-    }
+    setError('');
+    const trimmedUsername = username.trim();
+    const trimmedEmail = email.trim();
 
+    if (!trimmedUsername || !trimmedEmail || !password || !confirmPassword) {
+      setError('Por favor, completa todos los campos');
+      return;
+    }
+    if (!EMAIL_REGEX.test(trimmedEmail)) {
+      setError('Ingresa un email válido');
+      return;
+    }
     if (password !== confirmPassword) {
-      return alert('Las contraseñas no coinciden');
+      setError('Las contraseñas no coinciden');
+      return;
     }
 
     try {
       setIsLoading(true);
       await register({
-        username: username.trim(),
-        email: email.trim(),
+        username: trimmedUsername,
+        email: trimmedEmail,
         password,
       });
-      alert('Registro exitoso. Ya puedes iniciar sesión.');
-      navigation.replace('Login');
+      navigation.goBack();
     } catch (error) {
-      console.log(error);
-      const errorMsg = error?.message ?? 'No se pudo completar el registro';
-      alert('Error al registrarse: ' + errorMsg);
+      console.error('[RegisterScreen]', error);
+      if (error?.status === 409) {
+        setError('El usuario o email ya está registrado.');
+      } else {
+        setError(getErrorMessage(error));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -95,15 +111,17 @@ export default function RegisterScreen({ navigation }) {
             placeholderTextColor="#9ca3af"
             value={confirmPassword}
             onChangeText={setConfirmPassword}
-            secureTextEntry={!showPassword}
+            secureTextEntry={!showConfirmPassword}
           />
           <TouchableOpacity
             style={styles.eyeIcon}
-            onPress={() => setShowPassword(!showPassword)}
+            onPress={() => setShowConfirmPassword(!showConfirmPassword)}
           >
-            <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={24} color="#9ca3af" />
+            <Ionicons name={showConfirmPassword ? 'eye-off' : 'eye'} size={24} color="#9ca3af" />
           </TouchableOpacity>
         </View>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity
           style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -120,7 +138,7 @@ export default function RegisterScreen({ navigation }) {
 
         <View style={styles.loginContainer}>
           <Text style={styles.loginText}>¿Ya tienes cuenta? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
             <Text style={styles.loginLink}>Inicia sesión</Text>
           </TouchableOpacity>
         </View>
@@ -208,5 +226,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
   },
 });
