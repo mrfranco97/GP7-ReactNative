@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAuth } from '../context/AuthContext.jsx';
 import ConnectionBadge from '../components/ConnectionBadge.jsx';
 import LoginScreen from '../screens/LoginScreen.jsx';
+import RegisterScreen from '../screens/RegisterScreen.jsx';
 import MainTabs from './MainTabs.jsx';
 
 const Stack = createNativeStackNavigator();
@@ -27,11 +28,18 @@ export default function AppNavigator() {
           options={{ headerRight: () => <ConnectionBadge /> }}
         />
       ) : (
-        <Stack.Screen
-          name="Login"
-          component={LoginScreen}
-          options={{ headerShown: false }}
-        />
+        <>
+          <Stack.Screen
+            name="Login"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="Register"
+            component={RegisterScreen}
+            options={{ headerShown: false }}
+          />
+        </>
       )}
     </Stack.Navigator>
   );
