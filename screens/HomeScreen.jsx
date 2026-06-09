@@ -109,13 +109,15 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity onPress={refresh} disabled={showLoading} style={styles.refreshButton}>
-              {showLoading ? (
-                <ActivityIndicator size="small" color="#22c55e" />
-              ) : (
-                <Ionicons name="refresh" size={20} color="#22c55e" />
-              )}
-            </TouchableOpacity>
+            {(isConnected || status.connection_state === 'error') && (
+              <TouchableOpacity onPress={refresh} disabled={showLoading} style={styles.refreshButton}>
+                {showLoading ? (
+                  <ActivityIndicator size="small" color="#22c55e" />
+                ) : (
+                  <Ionicons name="refresh" size={20} color="#22c55e" />
+                )}
+              </TouchableOpacity>
+            )}
           </View>
 
           {isConnected && (
@@ -154,17 +156,10 @@ export default function HomeScreen() {
         {/* Selector de Robot (Deshabilitado si ya está conectado) */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>1. Selecciona el Robot</Text>
-          {isConnected ? (
-            <View style={styles.lockedWarning}>
-              <Ionicons name="lock-closed" size={16} color="#9ca3af" style={{ marginRight: 6 }} />
-              <Text style={styles.lockedText}>
-                Desconecta el robot actual para cambiar el tipo.
-              </Text>
-            </View>
-          ) : null}
           <RobotSelector
             selectedRobot={robotType}
             onSelect={isConnected ? () => { } : setRobotType}
+            isLocked={isConnected}
           />
         </View>
 
@@ -374,21 +369,7 @@ const styles = StyleSheet.create({
     color: '#f3f4f6',
     marginBottom: 12,
   },
-  lockedWarning: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(31, 41, 55, 0.6)',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#374151',
-  },
-  lockedText: {
-    color: '#9ca3af',
-    fontSize: 12,
-  },
+
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',

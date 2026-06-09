@@ -10,17 +10,25 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    if (!identifier || !password)
-      return alert('Por favor, completa todos los campos');
+    setError('');
+    if (!identifier || !password) {
+      setError('Por favor, completa todos los campos');
+      return;
+    }
 
     try {
       setIsLoading(true);
       await login(identifier, password);
     } catch (error) {
       console.error('[LoginScreen]', error);
-      alert('Error al iniciar sesión: ' + getErrorMessage(error));
+      if (error?.status === 401) {
+        setError('Usuario o contraseña incorrectos.');
+      } else {
+        setError(getErrorMessage(error));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -66,6 +74,8 @@ export default function LoginScreen({ navigation }) {
           </TouchableOpacity>
         </View>
 
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
         <TouchableOpacity
           style={[styles.button, isLoading && styles.buttonDisabled]}
           onPress={handleLogin}
@@ -83,7 +93,7 @@ export default function LoginScreen({ navigation }) {
         <View style={styles.registerContainer}>
           <Text style={styles.registerText}>¿No tienes cuenta? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.registerLink}>Regístrate Aquí</Text>
+            <Text style={styles.registerLink}>Regístrate aquí</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -170,5 +180,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
   },
 });
