@@ -19,7 +19,12 @@ export default function LoginScreen({ navigation }) {
       await login(identifier, password);
     } catch (error) {
       console.log(error);
-      const errorMsg = error?.response?.data?.detail ?? error?.response?.data?.error ?? error?.message ?? 'Credenciales inválidas o error de conexión';
+      let errorMsg;
+      if (error?.status === 401) {
+        errorMsg = 'Usuario o contraseña incorrectos.';
+      } else {
+        errorMsg = error?.message ?? 'Credenciales inválidas o error de conexión';
+      }
       alert('Error al iniciar sesión: ' + errorMsg);
     } finally {
       setIsLoading(false);

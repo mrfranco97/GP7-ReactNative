@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
         setUser({ username: identifier });
         setIsAuthenticated(true);
       } else {
-        throw new Error('Ocurrio un error inesperado. Por favor, intente mas tarde.');
+        throw new Error('Ocurrió un error inesperado. Por favor, intente más tarde.');
       }
     } catch (error) {
       console.error('[AuthContext] Error durante login:', error);
