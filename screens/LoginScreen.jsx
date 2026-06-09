@@ -9,23 +9,27 @@ export default function LoginScreen({ navigation }) {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleLogin = async () => {
-    if (!identifier || !password)
-      return alert('Por favor, completa todos los campos');
+    setError('');
+    if (!identifier || !password) {
+      setError('Por favor, completa todos los campos');
+      return;
+    }
 
     try {
       setIsLoading(true);
       await login(identifier, password);
-    } catch (error) {
-      console.log(error);
+    } catch (err) {
+      console.log(err);
       let errorMsg;
-      if (error?.status === 401) {
+      if (err?.status === 401) {
         errorMsg = 'Usuario o contraseña incorrectos.';
       } else {
-        errorMsg = error?.message ?? 'Credenciales inválidas o error de conexión';
+        errorMsg = err?.message ?? 'Credenciales inválidas o error de conexión';
       }
-      alert('Error al iniciar sesión: ' + errorMsg);
+      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -70,6 +74,8 @@ export default function LoginScreen({ navigation }) {
             <Ionicons name={showPassword ? "eye-off" : "eye"} size={24} color="#9ca3af" />
           </TouchableOpacity>
         </View>
+
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity
           style={[styles.button, isLoading && styles.buttonDisabled]}
@@ -175,5 +181,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 14,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
   },
 });
