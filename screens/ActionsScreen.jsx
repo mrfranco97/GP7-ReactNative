@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import { useConnection } from '../context/ConnectionContext.jsx';
 import { getActions, runAction } from '../services/actionsService.js';
+import{useHistory} from '../context/HistoryContext.jsx'
 
 // TODO: extraer a components/ActionFeedback.jsx
 function ActionFeedback({ feedback }) {
@@ -19,13 +20,13 @@ function ActionFeedback({ feedback }) {
 export default function ActionsScreen() {
   const { status } = useConnection();
   const isConnected = status.connection_state === 'connected';
-
+  const {logCommand} = useHistory();
   const [acciones, setAcciones] = useState([]);
   const [accionSeleccionada, setAccionSeleccionada] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [loadingAcciones, setLoadingAcciones] = useState(false);
   const [enviando, setEnviando] = useState(false);
-
+  
   useEffect(() => {
     if (!isConnected) {
       setAcciones([]);
@@ -45,8 +46,10 @@ export default function ActionsScreen() {
     try {
       await runAction(accionSeleccionada);
       setFeedback({ ok: true, action: accionSeleccionada });
+      await logCommand({ type: 'action', label: accionSeleccionada, success: true, detail: null })
     } catch {
       setFeedback({ ok: false, action: accionSeleccionada });
+      await logCommand({ type: 'action', label: accionSeleccionada, success: false, detail: null })
     } finally {
       setEnviando(false);
     }
