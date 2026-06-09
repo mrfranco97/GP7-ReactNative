@@ -23,10 +23,3 @@ export async function clearToken() {
   await SecureStore.deleteItemAsync(TOKEN_KEY);
 }
 
-export function getTokenSync() {
-  return memoryToken;
-}
-
-export function setTokenInMemory(token) {
-  memoryToken = token;
-}

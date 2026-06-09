@@ -1,10 +1,11 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, KeyboardAvoidingView, TouchableOpacity, TextInput, ActivityIndicator, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { AuthContext } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
+import { getErrorMessage } from '../utils/apiErrors';
 
 export default function LoginScreen({ navigation }) {
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,15 +22,13 @@ export default function LoginScreen({ navigation }) {
     try {
       setIsLoading(true);
       await login(identifier, password);
-    } catch (err) {
-      console.log(err);
-      let errorMsg;
-      if (err?.status === 401) {
-        errorMsg = 'Usuario o contraseña incorrectos.';
+    } catch (error) {
+      console.error('[LoginScreen]', error);
+      if (error?.status === 401) {
+        setError('Usuario o contraseña incorrectos.');
       } else {
-        errorMsg = err?.message ?? 'Credenciales inválidas o error de conexión';
+        setError(getErrorMessage(error));
       }
-      setError(errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +93,7 @@ export default function LoginScreen({ navigation }) {
         <View style={styles.registerContainer}>
           <Text style={styles.registerText}>¿No tienes cuenta? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-            <Text style={styles.registerLink}>Regístrate Aquí</Text>
+            <Text style={styles.registerLink}>Regístrate aquí</Text>
           </TouchableOpacity>
         </View>
       </View>
